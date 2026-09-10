@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pengguna extends Model
 {
@@ -43,12 +44,22 @@ class Pengguna extends Model
     }
 
     public function roles(): BelongsToMany
-{
-    return $this->belongsToMany(
-        Role::class,
-        'pengguna_role',
-        'id_pengguna',
-        'id_role'
-    );
-}
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'pengguna_role',
+            'id_pengguna',
+            'id_role'
+        );
+    }
+
+
+    public function penugasan(): HasMany
+    {
+        return $this->hasMany(
+            Penugasan::class,
+            'id_pengguna',
+            'id_pengguna'
+        );
+    }
 }

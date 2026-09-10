@@ -42,4 +42,13 @@ class Siswa extends Model
             'id_siswa'
         );
     }
+
+    public function pengecualianKewajiban(): HasMany
+    {
+        return $this->hasMany(
+            PengecualianKewajiban::class,
+            'id_siswa',
+            'id_siswa'
+        );
+    }
 }

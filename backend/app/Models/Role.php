@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\belongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -25,6 +26,25 @@ class Role extends Model
             'role_permission',
             'id_role',
             'id_permission'
+        );
+    }
+
+    public function pengguna(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Pengguna::class,
+            'pengguna_role',
+            'id_role',
+            'id_pengguna'
+        );
+    }
+
+    public function penugasan(): HasMany
+    {
+        return $this->hasMany(
+            Penugasan::class,
+            'id_role',
+            'id_role'
         );
     }
 }
