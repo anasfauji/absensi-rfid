@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Pengguna extends Model
+class Pengguna extends Authenticatable
 {
+    use HasApiTokens;
     protected $table = 'pengguna';
 
     protected $primaryKey = 'id_pengguna';
@@ -16,6 +19,7 @@ class Pengguna extends Model
     protected $fillable = [
         'username',
         'password',
+        'role',
         'nama_tampilan',
         'email',
         'foto',
@@ -23,6 +27,10 @@ class Pengguna extends Model
         'id_siswa',
         'status',
         'last_login_at',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     public function guru(): BelongsTo
@@ -58,6 +66,42 @@ class Pengguna extends Model
     {
         return $this->hasMany(
             Penugasan::class,
+            'id_pengguna',
+            'id_pengguna'
+        );
+    }
+
+    public function presensiGateDibuat(): HasMany
+    {
+        return $this->hasMany(
+            PresensiGate::class,
+            'dibuat_oleh',
+            'id_pengguna'
+        );
+    }
+
+    public function presensiGateDiubah(): HasMany
+    {
+        return $this->hasMany(
+            PresensiGate::class,
+            'diubah_oleh',
+            'id_pengguna'
+        );
+    }
+
+    public function auditLog(): HasMany
+    {
+        return $this->hasMany(
+            AuditLog::class,
+            'id_pengguna',
+            'id_pengguna'
+        );
+    }
+
+    public function notifikasi(): HasMany
+    {
+        return $this->hasMany(
+            Notifikasi::class,
             'id_pengguna',
             'id_pengguna'
         );

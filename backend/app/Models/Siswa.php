@@ -51,4 +51,40 @@ class Siswa extends Model
             'id_siswa'
         );
     }
+
+    public function kartuRfid(): HasMany
+    {
+        return $this->hasMany(
+            KartuRfid::class,
+            'id_siswa',
+            'id_siswa'
+        );
+    }
+
+    public function rfidEvent(): HasMany
+    {
+        return $this->hasMany(
+            RfidEvent::class,
+            'id_siswa',
+            'id_siswa'
+        );
+    }
+
+    public function presensiGate(): HasMany
+    {
+        return $this->hasMany(
+            PresensiGate::class,
+            'id_siswa',
+            'id_siswa'
+        );
+    }
+
+    public function presensiKelas(): HasMany
+    {
+        return $this->hasMany(
+            PresensiKelas::class,
+            'id_siswa',
+            'id_siswa'
+        );
+    }
 }
