@@ -19,7 +19,6 @@ class Pengguna extends Authenticatable
     protected $fillable = [
         'username',
         'password',
-        'role',
         'nama_tampilan',
         'email',
         'foto',
@@ -61,6 +60,14 @@ class Pengguna extends Authenticatable
         );
     }
 
+    public function hasPermission(string $kodePermission): bool
+    {
+        return $this->roles()
+            ->whereHas('permissions', function ($query) use ($kodePermission) {
+                $query->where('kode_permission', $kodePermission);
+            })
+            ->exists();
+    }
 
     public function penugasan(): HasMany
     {

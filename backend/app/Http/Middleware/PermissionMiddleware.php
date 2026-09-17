@@ -6,10 +6,13 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class RoleMiddleware
+class PermissionMiddleware
 {
-    public function handle(Request $request, Closure $next, string ...$roles): Response
-    {
+    public function handle(
+        Request $request,
+        Closure $next,
+        string ...$permissions
+    ): Response {
         $pengguna = $request->user();
 
         if (! $pengguna) {
@@ -18,11 +21,12 @@ class RoleMiddleware
             ], 403);
         }
 
-        $memilikiRole = $pengguna->roles()
-            ->whereIn('kode_role', $roles)
-            ->exists();
+        $memilikiPermission = collect($permissions)
+            ->contains(
+                fn ($permission) => $pengguna->hasPermission($permission)
+            );
 
-        if (! $memilikiRole) {
+        if (! $memilikiPermission) {
             return response()->json([
                 'message' => 'Akses ditolak.',
             ], 403);

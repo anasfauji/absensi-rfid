@@ -30,8 +30,9 @@ class AuthController extends Controller
                 'message' => 'Akun tidak aktif.',
             ], 403);
         }
-
+        $pengguna->load('roles');
         $token = $pengguna->createToken('api-token')->plainTextToken;
+
 
         return response()->json([
             'message' => 'Login berhasil.',
@@ -39,7 +40,10 @@ class AuthController extends Controller
                 'pengguna' => [
                     'id_pengguna' => $pengguna->id_pengguna,
                     'username' => $pengguna->username,
-                    'role' => $pengguna->role,
+                    'roles' => $pengguna->roles
+                        ->pluck('kode_role')
+                        ->values()
+                        ->all(),
                     'nama_tampilan' => $pengguna->nama_tampilan,
                     'email' => $pengguna->email,
                     'status' => $pengguna->status,

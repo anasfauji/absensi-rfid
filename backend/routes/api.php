@@ -11,7 +11,7 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 // Temporary route untuk pengujian auth:sanctum.
 Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
-    $pengguna = $request->user();
+    $pengguna = $request->user()->load('roles');
 
     return response()->json([
         'message' => 'Token valid.',
@@ -19,7 +19,10 @@ Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
             'pengguna' => [
                 'id_pengguna' => $pengguna->id_pengguna,
                 'username' => $pengguna->username,
-                'role' => $pengguna->role,
+                'roles' => $pengguna->roles
+                    ->pluck('kode_role')
+                    ->values()
+                    ->all(),
                 'nama_tampilan' => $pengguna->nama_tampilan,
                 'email' => $pengguna->email,
                 'status' => $pengguna->status,
@@ -35,6 +38,4 @@ Route::middleware(['auth:sanctum', 'role:ADMIN'])->group(function () {
     Route::put('/pengguna/{id_pengguna}', [PenggunaController::class, 'update']);
     Route::delete('/pengguna/{id_pengguna}', [PenggunaController::class, 'destroy']);
 });
-
-
 
