@@ -21,10 +21,11 @@ class PermissionMiddleware
             ], 403);
         }
 
-        $memilikiPermission = collect($permissions)
-            ->contains(
-                fn ($permission) => $pengguna->hasPermission($permission)
-            );
+        $memilikiPermission = $pengguna->roles()
+            ->whereHas('permissions', function ($query) use ($permissions) {
+                $query->whereIn('kode_permission', $permissions);
+            })
+            ->exists();
 
         if (! $memilikiPermission) {
             return response()->json([

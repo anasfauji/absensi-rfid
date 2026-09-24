@@ -15,7 +15,6 @@ class Kalender extends Model
         'id_tahun_ajaran',
         'tanggal',
         'status_hari',
-        'jenis_kegiatan',
         'keterangan',
     ];
 

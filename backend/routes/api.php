@@ -38,4 +38,3 @@ Route::middleware(['auth:sanctum', 'role:ADMIN'])->group(function () {
     Route::put('/pengguna/{id_pengguna}', [PenggunaController::class, 'update']);
     Route::delete('/pengguna/{id_pengguna}', [PenggunaController::class, 'destroy']);
 });
-

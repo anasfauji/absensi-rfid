@@ -21,6 +21,8 @@ class PenggunaController extends Controller
                 'username',
                 'nama_tampilan',
                 'email',
+                'id_guru',
+                'id_siswa',
                 'status',
             ])
             ->orderBy('id_pengguna')
@@ -29,6 +31,8 @@ class PenggunaController extends Controller
                 return [
                     'id_pengguna' => $item->id_pengguna,
                     'username' => $item->username,
+                    'id_guru' => $item->id_guru,
+                    'id_siswa' => $item->id_siswa,
                     'roles' => $item->roles
                         ->pluck('kode_role')
                         ->values()
