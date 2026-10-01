@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PenggunaController;
+use App\Http\Controllers\Api\PresensiKelasController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\EvaluasiPresensiController;
+use App\Http\Controllers\Api\SesiPresensiController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -38,3 +41,31 @@ Route::middleware(['auth:sanctum', 'role:ADMIN'])->group(function () {
     Route::put('/pengguna/{id_pengguna}', [PenggunaController::class, 'update']);
     Route::delete('/pengguna/{id_pengguna}', [PenggunaController::class, 'destroy']);
 });
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get(
+        '/siswa/{id_siswa}/evaluasi-presensi',
+        [EvaluasiPresensiController::class, 'show']
+    );
+});
+
+Route::middleware('auth:sanctum')->post(
+    '/sesi-presensi',
+    [SesiPresensiController::class, 'store']
+);
+
+Route::middleware('auth:sanctum')->put(
+    '/sesi-presensi/{id_sesi_presensi}',
+    [SesiPresensiController::class, 'update']
+);
+
+Route::middleware('auth:sanctum')->put(
+    '/sesi-presensi/{id_sesi_presensi}/penangan',
+    [SesiPresensiController::class, 'assignHandler']
+);
+
+Route::middleware('auth:sanctum')->put(
+    '/sesi-presensi/{id_sesi_presensi}/presensi/{id_siswa}',
+    [PresensiKelasController::class, 'update']
+);

@@ -1552,7 +1552,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'diubah_oleh' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -1638,7 +1638,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'diubah_oleh' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -1746,7 +1746,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -1853,7 +1853,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -1960,7 +1960,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -2067,7 +2067,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -2174,7 +2174,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -2246,7 +2246,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'status' => 'AKTIF',
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -2320,7 +2320,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'status' => 'AKTIF',
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,
@@ -2394,7 +2394,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'status' => 'AKTIF',
         ]);
 
-        $service = new AttendanceEvaluationService();
+        $service = app(AttendanceEvaluationService::class);
 
         $hasil = $service->evaluate(
             $siswa->id_siswa,

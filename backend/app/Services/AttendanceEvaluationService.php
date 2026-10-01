@@ -4,13 +4,15 @@ namespace App\Services;
 
 use App\Models\Kalender;
 use App\Models\Kegiatan;
-use App\Models\PenempatanSiswa;
 use Carbon\CarbonInterface;
 use App\Models\PresensiGate;
 use App\Models\PresensiKelas;
 
 class AttendanceEvaluationService
 {
+    public function __construct(
+        private StudentPlacementResolver $studentPlacementResolver
+    ) {}
     public function evaluate(
         int $idSiswa,
         CarbonInterface $tanggal
@@ -48,26 +50,25 @@ class AttendanceEvaluationService
             ];
         }
 
-        if ($this->hasClassAttendanceStatus($idSiswa, $tanggal, 'SAKIT')) {
+        $nonAttendanceStatuses = $this->getDistinctNonAttendanceStatuses(
+            $idSiswa,
+            $tanggal
+        );
+
+        if (count($nonAttendanceStatuses) > 1) {
             return [
-                'status' => 'SAKIT',
+                'status' => null,
                 'wajib_hadir' => true,
             ];
         }
 
-        if ($this->hasClassAttendanceStatus($idSiswa, $tanggal, 'IZIN')) {
+        if (count($nonAttendanceStatuses) === 1) {
             return [
-                'status' => 'IZIN',
+                'status' => $nonAttendanceStatuses[0],
                 'wajib_hadir' => true,
             ];
         }
 
-        if ($this->hasClassAttendanceStatus($idSiswa, $tanggal, 'DISPENSASI')) {
-            return [
-                'status' => 'DISPENSASI',
-                'wajib_hadir' => true,
-            ];
-        }
 
         if ($this->isAfterAttendanceCutoff($tanggal)) {
             return [
@@ -119,6 +120,26 @@ class AttendanceEvaluationService
             ->exists();
     }
 
+    private function getDistinctNonAttendanceStatuses(
+        int $idSiswa,
+        CarbonInterface $tanggal
+    ): array {
+        return PresensiKelas::query()
+            ->where('id_siswa', $idSiswa)
+            ->whereIn('status', [
+                'SAKIT',
+                'IZIN',
+                'DISPENSASI',
+            ])
+            ->whereHas('sesiPresensi', function ($query) use ($tanggal) {
+                $query->whereDate('tanggal', $tanggal);
+            })
+            ->distinct()
+            ->pluck('status')
+            ->values()
+            ->all();
+    }
+
     private function isAfterAttendanceCutoff(
         CarbonInterface $tanggal
     ): bool {
@@ -143,17 +164,8 @@ class AttendanceEvaluationService
             return false;
         }
 
-        $penempatan = PenempatanSiswa::query()
-            ->with('kelas.jurusan')
-            ->where('id_siswa', $idSiswa)
-            ->where('status', 'AKTIF')
-            ->whereDate('tanggal_mulai', '<=', $tanggal)
-            ->where(function ($query) use ($tanggal) {
-                $query
-                    ->whereNull('tanggal_selesai')
-                    ->orWhereDate('tanggal_selesai', '>=', $tanggal);
-            })
-            ->first();
+        $penempatan = $this->studentPlacementResolver
+            ->getEffectivePlacement($idSiswa, $tanggal);
 
         if (!$penempatan) {
             return null;

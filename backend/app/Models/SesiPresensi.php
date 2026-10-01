@@ -14,6 +14,7 @@ class SesiPresensi extends Model
 
     protected $fillable = [
         'id_guru',
+        'id_guru_penangan',
         'id_kelas',
         'id_mata_pelajaran',
         'tanggal',
@@ -29,6 +30,15 @@ class SesiPresensi extends Model
         return $this->belongsTo(
             Guru::class,
             'id_guru',
+            'id_guru'
+        );
+    }
+
+    public function guruPenangan(): BelongsTo
+    {
+        return $this->belongsTo(
+            Guru::class,
+            'id_guru_penangan',
             'id_guru'
         );
     }
@@ -59,5 +69,4 @@ class SesiPresensi extends Model
             'id_sesi_presensi'
         );
     }
-
 }
