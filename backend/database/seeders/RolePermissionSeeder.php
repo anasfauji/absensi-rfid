@@ -269,10 +269,8 @@ class RolePermissionSeeder extends Seeder
                 'kartu_rfid.lihat',
                 'rfid_event.lihat',
                 'presensi_gate.lihat',
-                'presensi_gate.koreksi',
                 'sesi_presensi.lihat',
                 'presensi_kelas.lihat',
-                'presensi_kelas.koreksi',
 
                 'notifikasi.lihat',
                 'notifikasi.tandai_dibaca',
@@ -310,11 +308,9 @@ class RolePermissionSeeder extends Seeder
                 'rfid_event.lihat',
 
                 'presensi_gate.lihat',
-                'presensi_gate.koreksi',
 
                 'sesi_presensi.lihat',
                 'presensi_kelas.lihat',
-                'presensi_kelas.koreksi',
 
                 'notifikasi.lihat',
                 'notifikasi.tandai_dibaca',
@@ -352,7 +348,6 @@ class RolePermissionSeeder extends Seeder
                 'rfid_event.lihat',
 
                 'presensi_gate.lihat',
-                'presensi_gate.koreksi',
 
                 'sesi_presensi.lihat',
                 'presensi_kelas.lihat',

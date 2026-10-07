@@ -332,10 +332,7 @@ class EvaluasiPresensiRequestTest extends TestCase
             'id_siswa' => $siswa->id_siswa,
             'tanggal' => '2026-09-23',
             'waktu_masuk' => '2026-09-23 06:55:00',
-            'waktu_keluar' => null,
-            'status' => 'HADIR',
             'sumber_masuk' => 'RFID',
-            'sumber_keluar' => null,
             'keterangan' => 'Fixture test RFID.',
             'dibuat_oleh' => $admin->id_pengguna,
             'diubah_oleh' => null,
@@ -1623,6 +1620,16 @@ class EvaluasiPresensiRequestTest extends TestCase
         $kelas = Kelas::findOrFail($penempatan->id_kelas);
         $mataPelajaran = MataPelajaran::firstOrFail();
 
+        $guruKedua = Guru::create([
+            'nip' => 'MIXED-GURU-' . uniqid(),
+            'nama_guru' => 'Guru Mixed Nonattendance',
+            'jenis_kelamin' => 'P',
+            'email' => null,
+            'nomor_telepon' => null,
+            'foto' => null,
+            'status' => 'AKTIF',
+        ]);
+
         $sesiSakit = SesiPresensi::create([
             'id_guru' => $guru->id_guru,
             'id_kelas' => $kelas->id_kelas,
@@ -1636,7 +1643,7 @@ class EvaluasiPresensiRequestTest extends TestCase
         ]);
 
         $sesiIzin = SesiPresensi::create([
-            'id_guru' => $guru->id_guru,
+            'id_guru' => $guruKedua->id_guru,
             'id_kelas' => $kelas->id_kelas,
             'id_mata_pelajaran' => $mataPelajaran->id_mata_pelajaran,
             'tanggal' => '2026-09-23',

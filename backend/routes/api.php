@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\EvaluasiPresensiController;
 use App\Http\Controllers\Api\SesiPresensiController;
+use App\Http\Controllers\Api\SesiPresensiQueryController;
+use App\Http\Controllers\Api\RfidGateController;
+use App\Http\Controllers\Api\PresensiGateController;
+use App\Http\Controllers\Api\PenugasanSayaController;
+use App\Http\Controllers\Api\RfidEventController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -44,6 +49,8 @@ Route::middleware(['auth:sanctum', 'role:ADMIN'])->group(function () {
 
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/penugasan-saya', [PenugasanSayaController::class, 'index']);
+
     Route::get(
         '/siswa/{id_siswa}/evaluasi-presensi',
         [EvaluasiPresensiController::class, 'show']
@@ -65,7 +72,85 @@ Route::middleware('auth:sanctum')->put(
     [SesiPresensiController::class, 'assignHandler']
 );
 
-Route::middleware('auth:sanctum')->put(
+Route::middleware([
+    'auth:sanctum',
+    'permission:presensi_kelas.koreksi',
+])->put(
     '/sesi-presensi/{id_sesi_presensi}/presensi/{id_siswa}',
     [PresensiKelasController::class, 'update']
 );
+
+Route::middleware('auth:sanctum')->put(
+    '/sesi-presensi/{id_sesi_presensi}/aktifkan',
+    [SesiPresensiController::class, 'activate']
+);
+
+Route::middleware('auth:sanctum')->put(
+    '/sesi-presensi/{id_sesi_presensi}/tutup',
+    [SesiPresensiController::class, 'close']
+);
+
+Route::middleware('auth:sanctum')->get(
+    '/sesi-presensi',
+    [SesiPresensiQueryController::class, 'index']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:presensi_kelas.lihat',
+])->get(
+    '/sesi-presensi/{id_sesi_presensi}/presensi',
+    [SesiPresensiQueryController::class, 'showPresensi']
+);
+
+Route::middleware('auth:sanctum')->get(
+    '/sesi-presensi/{id_sesi_presensi}',
+    [SesiPresensiQueryController::class, 'show']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:presensi_gate.koreksi',
+    'role:ADMIN,OPERATOR',
+])->put(
+    '/presensi-gate/{id_presensi_gate}',
+    [PresensiGateController::class, 'update']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:presensi_gate.lihat',
+    'role:ADMIN,OPERATOR',
+])->get(
+    '/presensi-gate',
+    [PresensiGateController::class, 'index']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:presensi_gate.lihat',
+    'role:ADMIN,OPERATOR',
+])->get(
+    '/presensi-gate/{id_presensi_gate}',
+    [PresensiGateController::class, 'show']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:rfid_event.lihat',
+    'role:ADMIN,OPERATOR',
+])->get(
+    '/rfid-event',
+    [RfidEventController::class, 'index']
+);
+
+Route::middleware([
+    'auth:sanctum',
+    'permission:rfid_event.lihat',
+    'role:ADMIN,OPERATOR',
+])->get(
+    '/rfid-event/{id_rfid_event}',
+    [RfidEventController::class, 'show']
+);
+
+Route::post('/rfid/tap', [RfidGateController::class, 'tap']);

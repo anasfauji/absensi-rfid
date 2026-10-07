@@ -78,6 +78,10 @@ class SesiPresensiAuthorization
             return true;
         }
 
+        if ($this->hasActiveHomeroomScope($pengguna, $sesiPresensi)) {
+            return true;
+        }
+
         if (! $pengguna->roles()
             ->where('kode_role', 'GURU')
             ->exists()) {
@@ -185,5 +189,132 @@ class SesiPresensiAuthorization
         }
 
         return $penempatan->id_kelas === $sesiPresensi->id_kelas;
+    }
+
+    public function validateStudentAttendanceManagement(
+        Pengguna $pengguna,
+        SesiPresensi $sesiPresensi,
+        int $idSiswa
+    ): ?string {
+        if (! $this->canManageAttendance($pengguna, $sesiPresensi)) {
+            return 'ACTOR_UNAUTHORIZED';
+        }
+
+        $penempatan = $this->studentPlacementResolver
+            ->getEffectivePlacement(
+                $idSiswa,
+                Carbon::parse($sesiPresensi->tanggal)
+            );
+
+        if (
+            $penempatan === null
+            || $penempatan->id_kelas !== $sesiPresensi->id_kelas
+        ) {
+            $isGuruPenangan =
+                $pengguna->id_guru !== null
+                && $sesiPresensi->id_guru_penangan === $pengguna->id_guru;
+
+            if ($isGuruPenangan) {
+                return 'ACTOR_OUTSIDE_SCOPE';
+            }
+
+            return 'STUDENT_OUTSIDE_SESSION_CLASS';
+        }
+
+        return null;
+    }
+
+    public function canActivate(
+        Pengguna $pengguna,
+        SesiPresensi $sesiPresensi
+    ): bool {
+        if (
+            $pengguna->roles()
+            ->whereIn('kode_role', ['ADMIN', 'OPERATOR'])
+            ->exists()
+        ) {
+            return true;
+        }
+
+        if (
+            ! $pengguna->roles()
+                ->where('kode_role', 'GURU')
+                ->exists()
+        ) {
+            return false;
+        }
+
+        if ($pengguna->id_guru === null) {
+            return false;
+        }
+
+        return $sesiPresensi->id_guru_penangan === $pengguna->id_guru;
+    }
+
+    public function canViewSession(
+        Pengguna $pengguna,
+        SesiPresensi $sesiPresensi
+    ): bool {
+        // ADMIN dan OPERATOR dapat melihat seluruh sesi.
+        if (
+            $pengguna->roles()
+            ->whereIn('kode_role', [
+                'ADMIN',
+                'OPERATOR',
+            ])
+            ->exists()
+        ) {
+            return true;
+        }
+
+        if ($this->hasActiveHomeroomScope($pengguna, $sesiPresensi)) {
+            return true;
+        }
+
+        // Guru harus memiliki identitas Guru.
+        if (
+            ! $pengguna->roles()
+                ->where('kode_role', 'GURU')
+                ->exists()
+        ) {
+            return false;
+        }
+
+        if ($pengguna->id_guru === null) {
+            return false;
+        }
+
+        // Guru Pemilik atau Guru Penangan dapat melihat sesi.
+        return $sesiPresensi->id_guru === $pengguna->id_guru
+            || $sesiPresensi->id_guru_penangan === $pengguna->id_guru;
+    }
+
+    private function hasActiveHomeroomScope(
+        Pengguna $pengguna,
+        SesiPresensi $sesiPresensi
+    ): bool {
+        if (! $pengguna->roles()
+            ->where('kode_role', 'WALI_KELAS')
+            ->exists()) {
+            return false;
+        }
+
+        $tanggalSesi = Carbon::parse($sesiPresensi->tanggal);
+
+        return $pengguna->penugasan()
+            ->whereHas('role', function ($query) {
+                $query->where('kode_role', 'WALI_KELAS');
+            })
+            ->where('status', 'AKTIF')
+            ->whereDate('tanggal_mulai', '<=', $tanggalSesi)
+            ->where(function ($query) use ($tanggalSesi) {
+                $query
+                    ->whereNull('tanggal_selesai')
+                    ->orWhereDate('tanggal_selesai', '>=', $tanggalSesi);
+            })
+            ->whereHas('penugasanKelas', function ($query) use ($sesiPresensi) {
+                $query->where('id_kelas', $sesiPresensi->id_kelas);
+            })
+            ->exists();
     }
 }

@@ -1836,7 +1836,7 @@ class SesiPresensiAuthorizationTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $authorization = new SesiPresensiAuthorization();
+        $authorization = app(SesiPresensiAuthorization::class);
 
         $boleh = $authorization->canManageAttendance(
             $penggunaPenangan,
@@ -1914,7 +1914,7 @@ class SesiPresensiAuthorizationTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $authorization = new SesiPresensiAuthorization();
+        $authorization = app(SesiPresensiAuthorization::class);
 
         $boleh = $authorization->canManageAttendance(
             $penggunaGuruLain,
@@ -1972,7 +1972,7 @@ class SesiPresensiAuthorizationTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $authorization = new SesiPresensiAuthorization();
+        $authorization = app(SesiPresensiAuthorization::class);
 
         $boleh = $authorization->canManageAttendance(
             $admin,
@@ -2030,7 +2030,7 @@ class SesiPresensiAuthorizationTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $authorization = new SesiPresensiAuthorization();
+        $authorization = app(SesiPresensiAuthorization::class);
 
         $boleh = $authorization->canManageAttendance(
             $operator,
@@ -2079,7 +2079,7 @@ class SesiPresensiAuthorizationTest extends TestCase
             'keterangan' => null,
         ]);
 
-        $authorization = new SesiPresensiAuthorization();
+        $authorization = app(SesiPresensiAuthorization::class);
 
         $boleh = $authorization->canManageAttendance(
             $penggunaSiswa,

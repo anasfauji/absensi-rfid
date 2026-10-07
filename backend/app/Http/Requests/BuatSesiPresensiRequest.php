@@ -47,6 +47,7 @@ class BuatSesiPresensiRequest extends FormRequest
                     'integer',
                     Rule::exists('guru', 'id_guru')
                         ->where('status', 'AKTIF'),
+                    'different:id_guru',
                 ]
                 : [
                     'prohibited',

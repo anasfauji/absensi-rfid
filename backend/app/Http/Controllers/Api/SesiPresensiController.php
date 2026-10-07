@@ -61,7 +61,7 @@ class SesiPresensiController extends Controller
             'tanggal' => $data['tanggal'],
             'waktu_mulai' => $data['waktu_mulai'],
             'waktu_selesai' => $data['waktu_selesai'] ?? null,
-            'status_sesi' => 'DRAFT',
+            'status_sesi' => $isAdminOrOperator ? 'DRAFT' : 'AKTIF',
             'materi' => $data['materi'] ?? null,
             'keterangan' => $data['keterangan'] ?? null,
         ]);
@@ -88,6 +88,17 @@ class SesiPresensiController extends Controller
             abort(403);
         }
 
+        if ($sesiPresensi->status_sesi === 'DITUTUP') {
+            abort(422);
+        }
+
+        if (
+            $sesiPresensi->status_sesi !== 'DRAFT'
+            && $data['tanggal'] !== $sesiPresensi->tanggal
+        ) {
+            abort(422);
+        }
+
         $sesiPresensi->update([
             'id_kelas' => $data['id_kelas'],
             'id_mata_pelajaran' => $data['id_mata_pelajaran'],
@@ -110,7 +121,10 @@ class SesiPresensiController extends Controller
     ): JsonResponse {
         $data = $request->validated();
 
-        $sesiPresensi = SesiPresensi::findOrFail($id_sesi_presensi);
+        $sesiPresensi = SesiPresensi::findOrFail(
+            $id_sesi_presensi
+        );
+
         $pengguna = $request->user();
 
         if (! $this->authorization->canAssignHandler(
@@ -120,12 +134,83 @@ class SesiPresensiController extends Controller
             abort(403);
         }
 
+        if ($sesiPresensi->status_sesi === 'DITUTUP') {
+            abort(422);
+        }
+
+        if (
+            (int) $data['id_guru_penangan'] ===
+            (int) $sesiPresensi->id_guru
+        ) {
+            abort(422);
+        }
+
         $sesiPresensi->update([
             'id_guru_penangan' => $data['id_guru_penangan'],
         ]);
 
         return response()->json([
             'message' => 'Guru penangan berhasil ditetapkan.',
+            'data' => $sesiPresensi->fresh(),
+        ], 200);
+    }
+
+    public function activate(
+        int $id_sesi_presensi
+    ): JsonResponse {
+        $sesiPresensi = SesiPresensi::findOrFail(
+            $id_sesi_presensi
+        );
+
+        $pengguna = request()->user();
+
+        if (! $this->authorization->canActivate(
+            $pengguna,
+            $sesiPresensi
+        )) {
+            abort(403);
+        }
+
+        if ($sesiPresensi->status_sesi !== 'DRAFT') {
+            abort(422);
+        }
+
+        $sesiPresensi->update([
+            'status_sesi' => 'AKTIF',
+        ]);
+
+        return response()->json([
+            'message' => 'Sesi presensi berhasil diaktifkan.',
+            'data' => $sesiPresensi->fresh(),
+        ], 200);
+    }
+
+    public function close(
+        int $id_sesi_presensi
+    ): JsonResponse {
+        $sesiPresensi = SesiPresensi::findOrFail(
+            $id_sesi_presensi
+        );
+
+        $pengguna = request()->user();
+
+        if (! $this->authorization->canClose(
+            $pengguna,
+            $sesiPresensi
+        )) {
+            abort(403);
+        }
+
+        if ($sesiPresensi->status_sesi !== 'AKTIF') {
+            abort(422);
+        }
+
+        $sesiPresensi->update([
+            'status_sesi' => 'DITUTUP',
+        ]);
+
+        return response()->json([
+            'message' => 'Sesi presensi berhasil ditutup.',
             'data' => $sesiPresensi->fresh(),
         ], 200);
     }

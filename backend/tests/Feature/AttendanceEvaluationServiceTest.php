@@ -1100,10 +1100,12 @@ class AttendanceEvaluationServiceTest extends TestCase
 
         $service = app(AttendanceEvaluationService::class);
 
+        Carbon::setTestNow(Carbon::parse('2026-10-01 12:00:00'));
         $hasil = $service->evaluate(
             $siswa->id_siswa,
             Carbon::parse('2026-10-01')
         );
+        Carbon::setTestNow();
 
         $this->assertTrue($hasil['wajib_hadir']);
         $this->assertNull($hasil['status']);
@@ -1543,10 +1545,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'id_siswa' => $siswa->id_siswa,
             'tanggal' => $tanggal,
             'waktu_masuk' => $tanggal->copy()->setTime(7, 5),
-            'waktu_keluar' => null,
-            'status' => 'HADIR',
             'sumber_masuk' => 'RFID',
-            'sumber_keluar' => null,
             'keterangan' => null,
             'dibuat_oleh' => null,
             'diubah_oleh' => null,
@@ -1629,10 +1628,7 @@ class AttendanceEvaluationServiceTest extends TestCase
             'id_siswa' => $siswa->id_siswa,
             'tanggal' => $tanggalGate,
             'waktu_masuk' => $tanggalGate->copy()->setTime(7, 5),
-            'waktu_keluar' => null,
-            'status' => 'HADIR',
             'sumber_masuk' => 'RFID',
-            'sumber_keluar' => null,
             'keterangan' => null,
             'dibuat_oleh' => null,
             'diubah_oleh' => null,
@@ -2183,6 +2179,125 @@ class AttendanceEvaluationServiceTest extends TestCase
 
         $this->assertTrue($hasil['wajib_hadir']);
         $this->assertSame('DISPENSASI', $hasil['status']);
+    }
+
+    public function test_beberapa_status_nonattendance_menghasilkan_null(): void
+    {
+        $tanggal = Carbon::parse('2026-09-23');
+        Carbon::setTestNow(Carbon::parse('2026-09-24 00:00:00'));
+
+        try {
+            $sekolah = Sekolah::create([
+                'kode_sekolah' => 'MIXED01',
+                'nama_sekolah' => 'Sekolah Mixed Status',
+                'npsn' => '99990001',
+                'status' => 'AKTIF',
+            ]);
+
+            $tahunAjaran = TahunAjaran::create([
+                'id_sekolah' => $sekolah->id_sekolah,
+                'nama_tahun_ajaran' => '2026/2027',
+                'tanggal_mulai' => '2026-07-01',
+                'tanggal_selesai' => '2027-06-30',
+                'semester_aktif' => 'GANJIL',
+                'status' => 'AKTIF',
+            ]);
+
+            Kalender::create([
+                'id_tahun_ajaran' => $tahunAjaran->id_tahun_ajaran,
+                'tanggal' => $tanggal,
+                'status_hari' => 'AKTIF',
+            ]);
+
+            $jurusan = Jurusan::create([
+                'id_sekolah' => $sekolah->id_sekolah,
+                'kode_jurusan' => 'MIX',
+                'nama_jurusan' => 'Jurusan Mixed Status',
+                'status' => 'AKTIF',
+            ]);
+
+            $kelas = Kelas::create([
+                'id_tahun_ajaran' => $tahunAjaran->id_tahun_ajaran,
+                'id_jurusan' => $jurusan->id_jurusan,
+                'tingkat' => 10,
+                'nama_kelas' => 'X MIX 1',
+                'status' => 'AKTIF',
+            ]);
+
+            $siswa = Siswa::create([
+                'nis' => 'MIX0001',
+                'nisn' => 'MIXNISN001',
+                'nama_siswa' => 'Siswa Mixed Status',
+                'jenis_kelamin' => 'L',
+                'status' => 'AKTIF',
+            ]);
+
+            PenempatanSiswa::create([
+                'id_siswa' => $siswa->id_siswa,
+                'id_kelas' => $kelas->id_kelas,
+                'tanggal_mulai' => '2026-07-01',
+                'tanggal_selesai' => null,
+                'status' => 'AKTIF',
+            ]);
+
+            $guru = Guru::create([
+                'nip' => 'MIXGURU001',
+                'nama_guru' => 'Guru Mixed Status',
+                'jenis_kelamin' => 'L',
+                'email' => 'mixed-status@example.test',
+                'nomor_telepon' => '081200000001',
+                'status' => 'AKTIF',
+            ]);
+
+            $guruKedua = Guru::create([
+                'nip' => 'MIXGURU002',
+                'nama_guru' => 'Guru Mixed Status Kedua',
+                'jenis_kelamin' => 'P',
+                'email' => 'mixed-status-2@example.test',
+                'nomor_telepon' => '081200000002',
+                'status' => 'AKTIF',
+            ]);
+
+            $mataPelajaran = MataPelajaran::create([
+                'kode_mata_pelajaran' => 'MIX001',
+                'nama_mata_pelajaran' => 'Mata Pelajaran Mixed',
+                'kelompok' => 'KEJURUAN',
+                'status' => 'AKTIF',
+            ]);
+
+            foreach ([
+                ['08:00:00', '09:00:00', 'SAKIT', $guru],
+                ['10:00:00', '11:00:00', 'IZIN', $guruKedua],
+            ] as [$waktuMulai, $waktuSelesai, $status, $guruSesi]) {
+                $sesi = SesiPresensi::create([
+                    'id_guru' => $guruSesi->id_guru,
+                    'id_kelas' => $kelas->id_kelas,
+                    'id_mata_pelajaran' => $mataPelajaran->id_mata_pelajaran,
+                    'tanggal' => $tanggal,
+                    'waktu_mulai' => $waktuMulai,
+                    'waktu_selesai' => $waktuSelesai,
+                    'status_sesi' => 'DITUTUP',
+                    'materi' => 'Fixture mixed nonattendance.',
+                ]);
+
+                PresensiKelas::create([
+                    'id_sesi_presensi' => $sesi->id_sesi_presensi,
+                    'id_siswa' => $siswa->id_siswa,
+                    'status' => $status,
+                    'sumber' => 'GURU',
+                ]);
+            }
+
+            $hasil = app(AttendanceEvaluationService::class)->evaluate(
+                $siswa->id_siswa,
+                $tanggal
+            );
+
+            $this->assertTrue($hasil['wajib_hadir']);
+            $this->assertNull($hasil['status']);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_siswa_tanpa_fakta_presensi_sebelum_cutoff_menghasilkan_null(): void
